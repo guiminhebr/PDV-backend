@@ -2,6 +2,7 @@ package LojaPDV.PDV.service;
 
 import java.util.List;
 
+import org.springframework.aop.ThrowsAdvice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ public class ProdutoService {
 	}
 	//metodo cadastro
 	public String save(Produto p) {
+		ValidarProduto(p);
 		this.repo.save(p);
 		return "Produto Salvo com sucesso.";
 	}
@@ -41,8 +43,18 @@ public class ProdutoService {
 	//metodo de atualizar
 	public String update(Produto p, long id) {
 		p.setId(id);
+		ValidarProduto(p);
 		this.repo.save(p);
 		return "Produto Atualizado.";
+	}
+	//metodo de validação de estoque e preço
+	public void ValidarProduto(Produto p) {
+		if(p.getPreco() <= 0) {
+			throw new IllegalArgumentException("Não pode preço negativo");
+		}
+		if(p.getEstoque() <= 0) {
+			throw new IllegalArgumentException("Não pode preço estoque negativo");
+		}
 	}
 	
 
