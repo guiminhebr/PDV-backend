@@ -47,7 +47,7 @@ public class ProdutoService {
 		this.repo.save(p);
 		return "Produto Atualizado.";
 	}
-	//metodo de validação de estoque e preço
+	//metodo de validação de campos
 	public void ValidarProduto(Produto p) {
 		if(p.getPreco() <= 0) {
 			throw new IllegalArgumentException("Não pode preço negativo");
@@ -55,7 +55,11 @@ public class ProdutoService {
 		if(p.getEstoque() <= 0) {
 			throw new IllegalArgumentException("Não pode preço estoque negativo");
 		}
+		if(p.getName() == null || p.getName().trim().isEmpty()) {
+			throw new IllegalArgumentException("Não pode ter nome vazio ou nulo");
+		}
 	}
+	
 	
 
 }
