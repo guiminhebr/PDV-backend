@@ -19,7 +19,7 @@ import LojaPDV.PDV.entity.Produto;
 import LojaPDV.PDV.service.ProdutoService;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/produto")
 @CrossOrigin("*")
 public class ProdutoController {
 	// conjurar métodos do service
