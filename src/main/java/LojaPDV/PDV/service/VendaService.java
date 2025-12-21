@@ -1,10 +1,12 @@
 package LojaPDV.PDV.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import javax.management.RuntimeErrorException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import LojaPDV.PDV.entity.ItemVenda;
@@ -92,6 +94,10 @@ public class VendaService {
 		venda.setStatus(StatusVenda.FINALIZADA);
 		this.repoVenda.save(venda);
 		
+	}
+	public List<Venda> obterListaVenda(){
+		List<Venda> lista = repoVenda.findAll();
+		return lista;
 	}
 
 }

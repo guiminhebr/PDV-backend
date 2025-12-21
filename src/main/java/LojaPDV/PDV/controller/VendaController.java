@@ -1,7 +1,11 @@
 package LojaPDV.PDV.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,6 +19,7 @@ import LojaPDV.PDV.service.VendaService;
 
 @RestController
 @RequestMapping("/venda")
+@CrossOrigin("*")
 public class VendaController {
 	@Autowired
 	private VendaService service;
@@ -33,6 +38,11 @@ public class VendaController {
 	public ResponseEntity<?> finalizar(@PathVariable Long id) {
 	    service.finalizarVenda(id);
 	    return ResponseEntity.ok("Venda finalizada");
+	}
+	@GetMapping("/vendas/listarVendas")
+	public ResponseEntity<List<Venda>> obterListaVenda(){
+			List<Venda> lista = this.service.obterListaVenda();
+			return ResponseEntity.ok(lista);
 	}
 
 }

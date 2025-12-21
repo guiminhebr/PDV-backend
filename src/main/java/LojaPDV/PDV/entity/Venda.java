@@ -4,6 +4,8 @@ import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -50,6 +52,7 @@ public class Venda {
 	private StatusVenda status;
 	//uma venda contem varios itemvenda
 	@OneToMany(mappedBy = "venda", cascade = CascadeType.ALL)
+	@JsonIgnore
 	private List<ItemVenda> lista = new ArrayList<>();
 	
 	private double total;
