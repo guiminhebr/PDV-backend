@@ -1,5 +1,6 @@
 package LojaPDV.PDV.service;
 
+import java.lang.reflect.UndeclaredThrowableException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -95,9 +96,63 @@ public class VendaService {
 		this.repoVenda.save(venda);
 		
 	}
+	@Transactional
+	public void removerItem(long vendaId, long itemId) {
+		//crio uma venda e atribuo a ela a venda que abri
+		Venda venda = repoVenda.findById(vendaId).orElseThrow(() -> new RuntimeException("Venda não encontrada"));
+		//valido se a venda está aberta
+		if(venda.getStatus() != StatusVenda.ABERTA) {
+			throw new RuntimeException("venda não aberta");
+		}
+		//valido se o item a ser deletado existe mesmo
+		ItemVenda item = repoItemVenda.findById(itemId).orElseThrow(() -> new RuntimeException("Item não encontrado"));
+		//valido se o item está dentro da venda
+		if(!(item.getVenda().getId() == vendaId)) {
+			throw new RuntimeException("Item não pertence a esta venda");
+		}
+		//pego o produto de dentro do itemVenda
+		Produto produto = item.getProduto();
+		//devolvo ao estoque o valor removido no adicionar item
+		produto.setEstoque(produto.getEstoque() + item.getQuantidade());
+		//salvo o estado do produto
+	    repoProduto.save(produto);
+	    //seto agora o total da venda sem o item
+	    venda.setTotal(venda.getTotal() - item.getSubtotal());
+	    //removo da lista o itemVenda
+	    venda.getLista().remove(item);
+	    //deelto no banco de dados o item
+	    repoItemVenda.delete(item);
+	    //salvo a venda agora com o item removido
+	    repoVenda.save(venda);
+		
+	}
+	@Transactional
+	public void cancelarVenda(Long vendaId) {
+		//verifico se a venda existe
+		Venda venda = repoVenda.findById(vendaId).orElseThrow(() -> new RuntimeException("Venda não encontrada"));
+		//valido se a venda encontrada está aberta
+		if(venda.getStatus() != StatusVenda.ABERTA) {
+			throw new RuntimeException("Apenas vendas abertas podem ser canceladas");
+		}
+		//retornar os valores pra estoque
+		for (ItemVenda item: venda.getLista()) {
+			Produto produto = item.getProduto();
+			produto.setEstoque(produto.getEstoque()+item.getQuantidade());
+			repoProduto.save(produto);
+			
+		}
+		//mudar status da venda
+		venda.setStatus(StatusVenda.CANCELADA);
+		venda.setTotal(0.0);
+		repoVenda.save(venda);
+		
+		
+	}
+	
 	public List<Venda> obterListaVenda(){
 		List<Venda> lista = repoVenda.findAll();
 		return lista;
 	}
+	
 
 }
