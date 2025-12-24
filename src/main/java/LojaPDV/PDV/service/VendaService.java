@@ -14,6 +14,12 @@ import LojaPDV.PDV.entity.ItemVenda;
 import LojaPDV.PDV.entity.Produto;
 import LojaPDV.PDV.entity.StatusVenda;
 import LojaPDV.PDV.entity.Venda;
+import LojaPDV.PDV.exceptions.EstoqueInsuficienteException;
+import LojaPDV.PDV.exceptions.ItemNaoPertenceAVendaException;
+import LojaPDV.PDV.exceptions.ProdutoNaoExisteException;
+import LojaPDV.PDV.exceptions.VendaNaoAbertaException;
+import LojaPDV.PDV.exceptions.VendaNaoEncontradaException;
+import LojaPDV.PDV.exceptions.VendaSemItensException;
 import LojaPDV.PDV.repository.ItemVendaRepository;
 import LojaPDV.PDV.repository.ProdutoRepository;
 import LojaPDV.PDV.repository.VendaRepository;
@@ -47,17 +53,17 @@ public class VendaService {
 	@Transactional //ou tudo salva ou tudo não salva
 	public void adicionarItem(Long vendaId, Long produtoId, int quantidade) {
 		//puxo a venda que acabei de faezr acima utilizando o findByid
-		Venda venda = repoVenda.findById(vendaId).orElseThrow(() -> new RuntimeException("Não existe essa venda"));
+		Venda venda = repoVenda.findById(vendaId).orElseThrow(VendaNaoEncontradaException::new);
 		//verifico se a venda está aberta, se não tiver jogo uma exceção.
 		if (venda.getStatus() != StatusVenda.ABERTA) {
-			throw new RuntimeException("Venda não está aberta");
+			throw new VendaNaoAbertaException();
 		}
 		//criar e puxar o objeto do produto que quero adicionar.
-		Produto produto = this.repoProduto.findById(produtoId).orElseThrow(() -> new RuntimeException("Não existe esse produto"));
+		Produto produto = this.repoProduto.findById(produtoId).orElseThrow(ProdutoNaoExisteException::new);
 		
 		//valida se o estoque está de acordo com a quantidade (lembrando que a requisição já trouxe a quantidade do item pra validar)
 		if (produto.getEstoque() < quantidade) {
-			throw new RuntimeException("Estoque insuficiente");
+			throw new EstoqueInsuficienteException();
 
 		}
 		ItemVenda item = new ItemVenda();
@@ -90,7 +96,7 @@ public class VendaService {
 		Venda venda = this.repoVenda.findById(vendaId).orElseThrow(() -> new RuntimeException("Venda não encontrada"));
 		
 		if (venda.getLista().isEmpty()) {
-			throw new RuntimeException("Venda sem Itens");
+			throw new VendaSemItensException();
 		}
 		venda.setStatus(StatusVenda.FINALIZADA);
 		this.repoVenda.save(venda);
@@ -99,16 +105,16 @@ public class VendaService {
 	@Transactional
 	public void removerItem(long vendaId, long itemId) {
 		//crio uma venda e atribuo a ela a venda que abri
-		Venda venda = repoVenda.findById(vendaId).orElseThrow(() -> new RuntimeException("Venda não encontrada"));
+		Venda venda = repoVenda.findById(vendaId).orElseThrow(VendaNaoEncontradaException::new);
 		//valido se a venda está aberta
 		if(venda.getStatus() != StatusVenda.ABERTA) {
-			throw new RuntimeException("venda não aberta");
+			throw new VendaNaoAbertaException();
 		}
 		//valido se o item a ser deletado existe mesmo
 		ItemVenda item = repoItemVenda.findById(itemId).orElseThrow(() -> new RuntimeException("Item não encontrado"));
 		//valido se o item está dentro da venda
 		if(!(item.getVenda().getId() == vendaId)) {
-			throw new RuntimeException("Item não pertence a esta venda");
+			throw new ItemNaoPertenceAVendaException();
 		}
 		//pego o produto de dentro do itemVenda
 		Produto produto = item.getProduto();
@@ -129,11 +135,10 @@ public class VendaService {
 	@Transactional
 	public void cancelarVenda(Long vendaId) {
 		//verifico se a venda existe
-		Venda venda = repoVenda.findById(vendaId).orElseThrow(() -> new RuntimeException("Venda não encontrada"));
+		Venda venda = repoVenda.findById(vendaId).orElseThrow(VendaNaoEncontradaException::new);
 		//valido se a venda encontrada está aberta
 		if(venda.getStatus() != StatusVenda.ABERTA) {
-			throw new RuntimeException("Apenas vendas abertas podem ser canceladas");
-		}
+			throw new VendaNaoAbertaException();		}
 		//retornar os valores pra estoque
 		for (ItemVenda item: venda.getLista()) {
 			Produto produto = item.getProduto();

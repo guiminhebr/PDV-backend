@@ -51,5 +51,10 @@ public class VendaController {
 		return ResponseEntity.ok("Item removido");
 		
 	}
+	@DeleteMapping("/vendas/{vendaId}/cancelar")
+	public ResponseEntity<?> cancelarVenda(@PathVariable Long vendaId){
+		service.cancelarVenda(vendaId);
+		return ResponseEntity.ok("Venda cancelada");
+	}
 
 }
